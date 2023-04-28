@@ -148,7 +148,7 @@ The following command-line calculates the evaluation metrics from a CSV file inc
 [AssessSegmentations]
 
 Input file: 
-        ./t__data/t__segmentations.csv
+        ./Segmentations.csv
 
 Contents (File paths REFERENCE <- TARGET) : 
         ./ref/R709_D8.nii.gz  <-  ./output/T709_D8.nii.gz 
