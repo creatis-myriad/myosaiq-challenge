@@ -33,15 +33,15 @@ Quick overview of the command-line options for evaluating segmentations.
 The following command-line calculates and displays the evaluation metrics from a ```reference``` and ```target``` segmentations (NIfTI file format).
 
 ```
-[mainframe@user myosaiq]$ ./aseg_single.py -r ./references/RefSegmentation_01.nii.gz -t ./TarSegmentation.nii.gz
+[mainframe@user myosaiq]$ ./aseg_single.py -r ./references/ref__107_D8.nii.gz -t ./output/tar__107_D8.nii.gz
 
 [AssessSegmentation]
 
 Reference segmentation (file path) : 
-        ./t__data/ref__107_D8.nii.gz
+        ./references/ref__107_D8.nii.gz
 
 Target segmentation (file path) : 
-        ./t__data/tar__107_D8.nii.gz
+        ./output/tar__107_D8.nii.gz
 
 
 SEGMENTATION ID    LABEL       METRIC       VALUE       STD        
