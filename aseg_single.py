@@ -19,9 +19,9 @@ if __name__ == '__main__':
     [mainframe@user myosaiq]$ ./aseg_single.py -r ./references/RefSegmentation_01.nii.gz -t ./TarSegmentation.nii.gz
     """
 
-    cmdLineParser = argparse.ArgumentParser(description='Input arguments for MYOSAIQ labels update.')
+    cmdLineParser = argparse.ArgumentParser(description='Calculate evaluation metrics.')
     #_______COMMAND-LINE OPTIONS_____
-    cmdLineParser.add_argument("-v", "--version",  action='version', version='%(prog)s 0.1.0 - Merge label files.')
+    cmdLineParser.add_argument("-v", "--version",  action='version', version='%(prog)s 0.1.0 - Assess Segmentation.')
     cmdLineParser.add_argument("-r", "--reference", dest="reference_file",  help="Reference segmentation (File path ./<PATH>/RefSegmentation.nii).", required=True)
     cmdLineParser.add_argument("-t", "--target",    dest="target_file",     help="Target segmentation (File path ./<PATH>/TarSegmentation.nii).", required=True)
 
