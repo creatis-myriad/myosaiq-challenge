@@ -349,7 +349,7 @@ class AssessSegmentation( object ):
         if (referenceXSize != targetXSize) or \
            (referenceYSize != targetYSize) or \
            (referenceZSize != targetZSize):
-           print("[AssessSegmentation::VerifySegmentations Warning] Pixel spacing does not match!")
+           print("[AssessSegmentation::VerifySpacingOrigin Warning] Pixel spacing does not match!")
 
         self.pixelVolume = referenceXSize * referenceYSize * referenceZSize
 
@@ -401,8 +401,8 @@ class AssessSegmentation( object ):
                 self.targetMetrics.DICE[label].value = overlapMeasures.GetDiceCoefficient( label )
 
             except Exception as exception:
-                print("[AssessSegmentation::CalcVolume Exception] %s" % str(exception))
-                print("[AssessSegmentation::CalcVolume Exception] %s" % str(traceback.format_exc()))   
+                print("[AssessSegmentation::CalcDICE Exception] %s" % str(exception))
+                print("[AssessSegmentation::CalcDICE Exception] %s" % str(traceback.format_exc()))   
 
 
     def __CalcHD( self ):
@@ -421,8 +421,8 @@ class AssessSegmentation( object ):
                 self.targetMetrics.HD[label].value = hausdorffDistanceImage.GetHausdorffDistance()
 
             except Exception as exception:
-                print("[AssessSegmentation::CalcVolume Exception] %s" % str(exception))
-                print("[AssessSegmentation::CalcVolume Exception] %s" % str(traceback.format_exc()))   
+                print("[AssessSegmentation::CalcHD Exception] %s" % str(exception))
+                print("[AssessSegmentation::CalcHD Exception] %s" % str(traceback.format_exc()))   
 
 
     def __CalcASSD( self ):
@@ -472,8 +472,8 @@ class AssessSegmentation( object ):
                 self.targetMetrics.ASSD[label].value = np.mean( surfaceDistances )                
 
             except Exception as exception:
-                print("[AssessSegmentation::CalcVolume Exception] %s" % str(exception))
-                print("[AssessSegmentation::CalcVolume Exception] %s" % str(traceback.format_exc()))   
+                print("[AssessSegmentation::CalcASSD Exception] %s" % str(exception))
+                print("[AssessSegmentation::CalcASSD Exception] %s" % str(traceback.format_exc()))   
 
 
     def PrintSingleMetrics( self ):
