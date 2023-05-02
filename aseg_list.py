@@ -11,6 +11,7 @@ import os
 import sys
 import argparse
 
+import pandas as pd
 from myosaiq import AssessSegmentations
 
 
@@ -53,8 +54,10 @@ if __name__ == '__main__':
     evaluationResults = aSegmentations.GetDataFrame()
 
     # Retrieve specific data: Left-Ventricle volume stats
-    statsReference = evaluationResults.loc[evaluationResults['SEGMENTATION ID'].isin(['REFERENCE AVG'])]
+    statsReference = evaluationResults.loc[evaluationResults['SEGMENTATION ID'].isin(['REFERENCE AVG'])]    
     statsTarget = evaluationResults.loc[evaluationResults['SEGMENTATION ID'].isin(['TARGET AVG'])]
+
+    pd.options.display.float_format = '{:18,.3f}'.format
 
     print("\n",statsReference,"\n\n",statsTarget )
 
