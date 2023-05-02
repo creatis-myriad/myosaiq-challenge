@@ -41,7 +41,7 @@ METRIC = [ "VOLUME",
 ROUND_DECIMALS = 4
 ROUND_DECIMALS_ASSD_HD = 3  # Default 3
 ROUND_DECIMALS_DICE = 3     # Default 3
-ROUND_DECIMALS_VOLUME = 1   # Default 1
+ROUND_DECIMALS_VOLUME = 3   # Default 1
 
 MAX_VOLUME = 600            # in mL
 
@@ -159,7 +159,12 @@ class AssessSegmentations( object ):
             self.overallReferenceMetrics.VOLUME[key].value = np.nanmean(refVolume)
             self.overallReferenceMetrics.VOLUME[key].std = np.nanstd(refVolume)
 
-            actual, predicted = np.array(refVolume), np.array(tarVolume)
+            actual = np.array(refVolume)
+            predicted = np.array(tarVolume)
+
+            actual = actual[~np.isnan(actual)]
+            predicted = predicted[~np.isnan(predicted)]
+            
             mae = float( np.nanmean( np.abs(actual - predicted) ) )
 
             # print( np.corrcoef(actual, predicted) )
