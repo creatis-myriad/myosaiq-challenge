@@ -46,4 +46,4 @@ if __name__ == '__main__':
 .   ----------------------------------------------------------------------------
     """    
     aSegmentation.Compute()
-    aSegmentation.PrintMetrics()
+    aSegmentation.PrintSingleMetrics()
