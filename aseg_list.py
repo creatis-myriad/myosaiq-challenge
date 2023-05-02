@@ -50,4 +50,12 @@ if __name__ == '__main__':
     
     aSegmentations.Compute()
 
+    evaluationResults = aSegmentations.GetDataFrame()
+
+    # Retrieve specific data: Left-Ventricle volume stats
+    statsReference = evaluationResults.loc[evaluationResults['SEGMENTATION ID'].isin(['REFERENCE AVG'])]
+    statsTarget = evaluationResults.loc[evaluationResults['SEGMENTATION ID'].isin(['TARGET AVG'])]
+
+    print("\n",statsReference,"\n\n",statsTarget )
+
     aSegmentations.ToCSV( OUTPUT_CSV_FILE_PATH )
