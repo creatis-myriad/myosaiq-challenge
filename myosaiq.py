@@ -156,11 +156,11 @@ class AssessSegmentations( object ):
                 tarHD.append(      seg.targetMetrics.HD[key].value)
                 tarASSD.append(    seg.targetMetrics.ASSD[key].value)
 
-            self.overallReferenceMetrics.VOLUME[key].value = np.mean(refVolume)
-            self.overallReferenceMetrics.VOLUME[key].std = np.std(refVolume)
+            self.overallReferenceMetrics.VOLUME[key].value = np.nanmean(refVolume)
+            self.overallReferenceMetrics.VOLUME[key].std = np.nanstd(refVolume)
 
             actual, predicted = np.array(refVolume), np.array(tarVolume)
-            mae = float( np.mean( np.abs(actual - predicted) ) )
+            mae = float( np.nanmean( np.abs(actual - predicted) ) )
 
             # print( np.corrcoef(actual, predicted) )
             
@@ -171,31 +171,31 @@ class AssessSegmentations( object ):
 
             self.overallReferenceMetrics.VOLUME_LOA[key].value = 1.96 * self.overallReferenceMetrics.VOLUME[key].std
             
-            self.overallReferenceMetrics.DICE[key].value = np.mean(refDICE)
-            self.overallReferenceMetrics.DICE[key].std = np.std(refDICE,0)
+            self.overallReferenceMetrics.DICE[key].value = np.nanmean(refDICE)
+            self.overallReferenceMetrics.DICE[key].std = np.nanstd(refDICE,0)
 
-            self.overallReferenceMetrics.HD[key].value = np.mean(refHD)
-            self.overallReferenceMetrics.HD[key].std = np.std(refHD)
+            self.overallReferenceMetrics.HD[key].value = np.nanmean(refHD)
+            self.overallReferenceMetrics.HD[key].std = np.nanstd(refHD)
 
-            self.overallReferenceMetrics.ASSD[key].value = np.mean(refASSD)
-            self.overallReferenceMetrics.ASSD[key].std = np.std(refASSD) 
+            self.overallReferenceMetrics.ASSD[key].value = np.nanmean(refASSD)
+            self.overallReferenceMetrics.ASSD[key].std = np.nanstd(refASSD) 
 
-            self.overallTargetMetrics.VOLUME[key].value = np.mean(tarVolume)
-            self.overallTargetMetrics.VOLUME[key].std = np.std(tarVolume,0)
+            self.overallTargetMetrics.VOLUME[key].value = np.nanmean(tarVolume)
+            self.overallTargetMetrics.VOLUME[key].std = np.nanstd(tarVolume,0)
 
             self.overallTargetMetrics.VOLUME_MAE[key].value = mae
             self.overallTargetMetrics.VOLUME_CC[key].value = coco
 
             self.overallTargetMetrics.VOLUME_LOA[key].value = 1.96 * self.overallTargetMetrics.VOLUME[key].std
             
-            self.overallTargetMetrics.DICE[key].value = np.mean(tarDICE)
-            self.overallTargetMetrics.DICE[key].std = np.std(tarDICE,0)
+            self.overallTargetMetrics.DICE[key].value = np.nanmean(tarDICE)
+            self.overallTargetMetrics.DICE[key].std = np.nanstd(tarDICE,0)
 
-            self.overallTargetMetrics.HD[key].value = np.mean(tarHD)
-            self.overallTargetMetrics.HD[key].std = np.std(tarHD)
+            self.overallTargetMetrics.HD[key].value = np.nanmean(tarHD)
+            self.overallTargetMetrics.HD[key].std = np.nanstd(tarHD)
 
-            self.overallTargetMetrics.ASSD[key].value = np.mean(tarASSD)
-            self.overallTargetMetrics.ASSD[key].std = np.std(tarASSD)
+            self.overallTargetMetrics.ASSD[key].value = np.nanmean(tarASSD)
+            self.overallTargetMetrics.ASSD[key].std = np.nanstd(tarASSD)
 
         print("[AssessSegmentations::Compute] Finished!")
 
@@ -468,8 +468,8 @@ class AssessSegmentation( object ):
                 
                 surfaceDistances = tar2refDistances + ref2tarDistances
 
-                self.referenceMetrics.ASSD[label].value = np.mean( surfaceDistances )
-                self.targetMetrics.ASSD[label].value = np.mean( surfaceDistances )                
+                self.referenceMetrics.ASSD[label].value = np.nanmean( surfaceDistances )
+                self.targetMetrics.ASSD[label].value = np.nanmean( surfaceDistances )                
 
             except Exception as exception:
                 print("[AssessSegmentation::CalcASSD Exception] %s" % str(exception))
@@ -496,40 +496,40 @@ class MyosaiqMetrics( object ):
         else:
             self.segmentationName = segmentationName
 
-        self.VOLUME = { LEFT_VENTRICULAR_CAVITY:Measurement(0, 0),
-                        MYOCARDIUM:Measurement(0, 0),
-                        MYOCARDIAL_INFARCTION:Measurement(0, 0),
-                        MVO:Measurement(0, 0) }
+        self.VOLUME = { LEFT_VENTRICULAR_CAVITY:Measurement(np.NAN, np.NAN),
+                        MYOCARDIUM:Measurement(np.NAN, np.NAN),
+                        MYOCARDIAL_INFARCTION:Measurement(np.NAN, np.NAN),
+                        MVO:Measurement(np.NAN, np.NAN) }
         
-        self.VOLUME_MAE = { LEFT_VENTRICULAR_CAVITY:Measurement(0, 0),
-                            MYOCARDIUM:Measurement(0, 0),
-                            MYOCARDIAL_INFARCTION:Measurement(0, 0),
-                            MVO:Measurement(0, 0) }
+        self.VOLUME_MAE = { LEFT_VENTRICULAR_CAVITY:Measurement(np.NAN, np.NAN),
+                            MYOCARDIUM:Measurement(np.NAN, np.NAN),
+                            MYOCARDIAL_INFARCTION:Measurement(np.NAN, np.NAN),
+                            MVO:Measurement(np.NAN, np.NAN) }
 
-        self.VOLUME_CC = { LEFT_VENTRICULAR_CAVITY:Measurement(0, 0),
-                           MYOCARDIUM:Measurement(0, 0),
-                           MYOCARDIAL_INFARCTION:Measurement(0, 0),
-                           MVO:Measurement(0, 0) }   
+        self.VOLUME_CC = { LEFT_VENTRICULAR_CAVITY:Measurement(np.NAN, np.NAN),
+                           MYOCARDIUM:Measurement(np.NAN, np.NAN),
+                           MYOCARDIAL_INFARCTION:Measurement(np.NAN, np.NAN),
+                           MVO:Measurement(np.NAN, np.NAN) }   
         
-        self.VOLUME_LOA = { LEFT_VENTRICULAR_CAVITY:Measurement(0, 0),
-                            MYOCARDIUM:Measurement(0, 0),
-                            MYOCARDIAL_INFARCTION:Measurement(0, 0),
-                            MVO:Measurement(0, 0) }                   
+        self.VOLUME_LOA = { LEFT_VENTRICULAR_CAVITY:Measurement(np.NAN, np.NAN),
+                            MYOCARDIUM:Measurement(np.NAN, np.NAN),
+                            MYOCARDIAL_INFARCTION:Measurement(np.NAN, np.NAN),
+                            MVO:Measurement(np.NAN, np.NAN) }                   
 
-        self.DICE = { LEFT_VENTRICULAR_CAVITY:Measurement(0, 0),
-                      MYOCARDIUM:Measurement(0, 0),
-                      MYOCARDIAL_INFARCTION:Measurement(0, 0),
-                      MVO:Measurement(0, 0) }
+        self.DICE = { LEFT_VENTRICULAR_CAVITY:Measurement(np.NAN, np.NAN),
+                      MYOCARDIUM:Measurement(np.NAN, np.NAN),
+                      MYOCARDIAL_INFARCTION:Measurement(np.NAN, np.NAN),
+                      MVO:Measurement(np.NAN, np.NAN) }
 
-        self.HD = { LEFT_VENTRICULAR_CAVITY:Measurement(0, 0),
-                    MYOCARDIUM:Measurement(0, 0),
-                    MYOCARDIAL_INFARCTION:Measurement(0, 0),
-                    MVO:Measurement(0, 0) }     
+        self.HD = { LEFT_VENTRICULAR_CAVITY:Measurement(np.NAN, np.NAN),
+                    MYOCARDIUM:Measurement(np.NAN, np.NAN),
+                    MYOCARDIAL_INFARCTION:Measurement(np.NAN, np.NAN),
+                    MVO:Measurement(np.NAN, np.NAN) }     
 
-        self.ASSD = { LEFT_VENTRICULAR_CAVITY:Measurement(0, 0),
-                      MYOCARDIUM:Measurement(0, 0),
-                      MYOCARDIAL_INFARCTION:Measurement(0, 0),
-                      MVO:Measurement(0, 0) }
+        self.ASSD = { LEFT_VENTRICULAR_CAVITY:Measurement(np.NAN, np.NAN),
+                      MYOCARDIUM:Measurement(np.NAN, np.NAN),
+                      MYOCARDIAL_INFARCTION:Measurement(np.NAN, np.NAN),
+                      MVO:Measurement(np.NAN, np.NAN) }
 
 
     def PrintSingleMetrics( self ):
