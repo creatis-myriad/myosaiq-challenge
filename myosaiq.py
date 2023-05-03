@@ -9,13 +9,13 @@
 #-------------------------------------------------------------------------------
 import os
 import traceback
+import logging
 
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import SimpleITK as sitk
-
 
 #-------------------------------------------------------------------------------
 # DEFS
@@ -39,9 +39,10 @@ METRIC = [ "VOLUME",
            "ASSD" ]
 
 ROUND_DECIMALS = 4
-ROUND_DECIMALS_ASSD_HD = 3  # Default 3
-ROUND_DECIMALS_DICE = 3     # Default 3
-ROUND_DECIMALS_VOLUME = 3   # Default 1
+ROUND_DECIMALS_ASSD_HD = 3     # Default 3
+ROUND_DECIMALS_DICE = 3        # Default 3
+ROUND_DECIMALS_VOLUME = 1      # Default 1
+ROUND_DECIMALS_VOLUME_MAE = 3  # Default 3
 
 MAX_VOLUME = 600            # in mL
 
@@ -106,8 +107,8 @@ class AssessSegmentations( object ):
             self.NUM_SEGMENTATIONS = int( self.referenceList.count() )
 
         except Exception as exception:
-            print("[AssessSegmentations::Load Exception] %s" % str(exception))
-            print("[AssessSegmentations::Load Exception] %s" % str(traceback.format_exc()))
+            log.error("[AssessSegmentations::Load Exception] %s" % str(exception))
+            log.error("[AssessSegmentations::Load Exception] %s" % str(traceback.format_exc()))
 
 
     def Compute( self ):
@@ -118,10 +119,14 @@ class AssessSegmentations( object ):
             print("[AssessSegmentations::Compute] Finished!")
             return
 
-        print("[AssessSegmentations::Compute] Executing ...")
-                  
         assessmentPlan = self.__VerifyFilePaths()
 
+        if not assessmentPlan:
+            print("[AssessSegmentations::Compute] Finished!")
+            return
+
+        print("[AssessSegmentations::Compute] Executing ...")
+                  
         for segmentation in assessmentPlan:
             aseg = AssessSegmentation( segmentation[0],  # Reference 
                                        segmentation[1] ) # Target
@@ -212,15 +217,16 @@ class AssessSegmentations( object ):
         """
         verifiedList = []
 
-        for index, row in self.referenceList.iterrows():
-            referenceSegmentation = row[0]
-            targetSegmentation = self.targetList.iloc[index]["TARGET"]
-            
-            if verifyFile(referenceSegmentation) and \
-               verifyFile(targetSegmentation):
-                verifiedList.append( (referenceSegmentation, targetSegmentation) )
-            else:
-                print("[AssessSegmentations::VerifyFilePaths Warning] %s  <- %s  File does not exist!" % (referenceSegmentation, targetSegmentation) )
+        if self.referenceList is not None:
+            for index, row in self.referenceList.iterrows():
+                referenceSegmentation = row[0]
+                targetSegmentation = self.targetList.iloc[index]["TARGET"]
+                
+                if verifyFile(referenceSegmentation) and \
+                verifyFile(targetSegmentation):
+                    verifiedList.append( (referenceSegmentation, targetSegmentation) )
+                else:
+                    print("[AssessSegmentations::VerifyFilePaths Warning] %s  <- %s  File does not exist!" % (referenceSegmentation, targetSegmentation) )
 
         return verifiedList
     
@@ -250,8 +256,8 @@ class AssessSegmentations( object ):
             print("[AssessSegmentations::ToCSV] Results to CSV file done!")
 
         except Exception as exception:
-            print("[AssessSegmentations::ToCSV Exception] %s" % str(exception))
-            print("[AssessSegmentations::ToCSV Exception] %s" % str(traceback.format_exc()))
+            log.error("[AssessSegmentations::ToCSV Exception] %s" % str(exception))
+            log.error("[AssessSegmentations::ToCSV Exception] %s" % str(traceback.format_exc()))
 
 
 class AssessSegmentation( object ):
@@ -325,8 +331,8 @@ class AssessSegmentation( object ):
             self.referenceLabels = referenceLabelShapeStats.GetLabels()
 
         except Exception as exception:
-            print("[AssessSegmentation::Load Exception] %s" % str(exception))
-            print("[AssessSegmentation::Load Exception] %s" % str(traceback.format_exc()))
+            log.error("[AssessSegmentation::Load Exception] %s" % str(exception))
+            log.error("[AssessSegmentation::Load Exception] %s" % str(traceback.format_exc()))
 
 
     def Compute( self ):
@@ -389,8 +395,8 @@ class AssessSegmentation( object ):
                 self.targetMetrics.VOLUME_MAE[label].value = absDifference
         
             except Exception as exception:
-                print("[AssessSegmentation::CalcVolume Exception] %s" % str(exception))
-                print("[AssessSegmentation::CalcVolume Exception] %s" % str(traceback.format_exc()))                
+                log.error("[AssessSegmentation::CalcVolume Exception] %s" % str(exception))
+                log.error("[AssessSegmentation::CalcVolume Exception] %s" % str(traceback.format_exc()))                
 
 
     def __CalcDICE( self ):
@@ -406,8 +412,11 @@ class AssessSegmentation( object ):
                 self.targetMetrics.DICE[label].value = overlapMeasures.GetDiceCoefficient( label )
 
             except Exception as exception:
-                print("[AssessSegmentation::CalcDICE Exception] %s" % str(exception))
-                print("[AssessSegmentation::CalcDICE Exception] %s" % str(traceback.format_exc()))   
+                self.referenceMetrics.DICE[label].value = np.NAN
+                self.targetMetrics.DICE[label].value = np.NAN
+                
+                log.error("[AssessSegmentation::CalcDICE Exception] %s" % str(exception))
+                log.error("[AssessSegmentation::CalcDICE Exception] %s" % str(traceback.format_exc()))   
 
 
     def __CalcHD( self ):
@@ -426,8 +435,11 @@ class AssessSegmentation( object ):
                 self.targetMetrics.HD[label].value = hausdorffDistanceImage.GetHausdorffDistance()
 
             except Exception as exception:
-                print("[AssessSegmentation::CalcHD Exception] %s" % str(exception))
-                print("[AssessSegmentation::CalcHD Exception] %s" % str(traceback.format_exc()))   
+                self.referenceMetrics.HD[label].value = np.NAN
+                self.targetMetrics.HD[label].value = np.NAN
+                
+                log.error("[AssessSegmentation::CalcHD Exception] %s" % str(exception))
+                log.error("[AssessSegmentation::CalcHD Exception] %s" % str(traceback.format_exc()))   
 
 
     def __CalcASSD( self ):
@@ -477,8 +489,11 @@ class AssessSegmentation( object ):
                 self.targetMetrics.ASSD[label].value = np.nanmean( surfaceDistances )                
 
             except Exception as exception:
-                print("[AssessSegmentation::CalcASSD Exception] %s" % str(exception))
-                print("[AssessSegmentation::CalcASSD Exception] %s" % str(traceback.format_exc()))   
+                self.referenceMetrics.ASSD[label].value = np.NAN
+                self.targetMetrics.ASSD[label].value = np.NAN
+                
+                log.error("[AssessSegmentation::CalcASSD Exception] %s" % str(exception))
+                log.error("[AssessSegmentation::CalcASSD Exception] %s" % str(traceback.format_exc()))   
 
 
     def PrintSingleMetrics( self ):
@@ -494,7 +509,9 @@ class MyosaiqMetrics( object ):
     Measurement class.
     """
     def __init__( self, segmentationName=None ):
-
+        """
+        Default Constructor.
+        """
         if segmentationName is None:
             self.segmentationName = "UNKNOWN"
 
@@ -541,7 +558,6 @@ class MyosaiqMetrics( object ):
         """
         Print metrics.
         """
-
         print("\n{:<18} {:^5} {:^18} {:<11} {:<11}\n".format( "SEGMENTATION ID", "LABEL", "METRIC", "VALUE", "STD") )
 
         for key in LABEL:
@@ -555,8 +571,8 @@ class MyosaiqMetrics( object ):
             print( "{:<18} {:^5} {:^18} {:<11} {:<11}".format( self.segmentationName,
                                                                LABEL[key],
                                                                "VOLUME AD",
-                                                               np.round(self.VOLUME_MAE[key].value, ROUND_DECIMALS_VOLUME),
-                                                               np.round(self.VOLUME_MAE[key].std,   ROUND_DECIMALS_VOLUME) ) ) 
+                                                               np.round(self.VOLUME_MAE[key].value, ROUND_DECIMALS_VOLUME_MAE),
+                                                               np.round(self.VOLUME_MAE[key].std,   ROUND_DECIMALS_VOLUME_MAE) ) ) 
 
         print()
         for key in LABEL:
@@ -596,7 +612,6 @@ class MyosaiqMetrics( object ):
         """
         Print ALL metrics.
         """
-
         table = self.GetTable()
 
         print("\n{:<18} {:^5} {:^18} {:<11} {:<11}\n".format( "SEGMENTATION ID", "LABEL", "METRIC", "VALUE", "STD") )
@@ -612,7 +627,6 @@ class MyosaiqMetrics( object ):
         """
         Return a table with all metrics.
         """
-
         table = []
 
         for key in LABEL:
@@ -629,16 +643,16 @@ class MyosaiqMetrics( object ):
             volumeMAE.append( self.segmentationName )
             volumeMAE.append( LABEL[key] )
             volumeMAE.append( "VOLUME MAE" )
-            volumeMAE.append( np.round(self.VOLUME_MAE[key].value, ROUND_DECIMALS_VOLUME) )
-            volumeMAE.append( np.round(self.VOLUME_MAE[key].std, ROUND_DECIMALS_VOLUME) )
+            volumeMAE.append( np.round(self.VOLUME_MAE[key].value, ROUND_DECIMALS_VOLUME_MAE) )
+            volumeMAE.append( np.round(self.VOLUME_MAE[key].std, ROUND_DECIMALS_VOLUME_MAE) )
             table.append( volumeMAE )
 
             volumeCC = []
             volumeCC.append( self.segmentationName )
             volumeCC.append( LABEL[key] )
             volumeCC.append( "VOLUME CC" )
-            volumeCC.append( np.round(self.VOLUME_CC[key].value, ROUND_DECIMALS_VOLUME) )
-            volumeCC.append( np.round(self.VOLUME_CC[key].std, ROUND_DECIMALS_VOLUME) )
+            volumeCC.append( np.round(self.VOLUME_CC[key].value, ROUND_DECIMALS_VOLUME_MAE) )
+            volumeCC.append( np.round(self.VOLUME_CC[key].std, ROUND_DECIMALS_VOLUME_MAE) )
             table.append( volumeCC )
 
             dice = []
@@ -745,8 +759,8 @@ class VolumesCDF(object):
             self.NUM_VOLUMES = int( self.volumeList.count() )
 
         except Exception as exception:
-            print("[VolumesCDF::Load Exception] %s" % str(exception))
-            print("[VolumesCDF::Load Exception] %s" % str(traceback.format_exc()))
+            log.error("[VolumesCDF::Load Exception] %s" % str(exception))
+            log.error("[VolumesCDF::Load Exception] %s" % str(traceback.format_exc()))
 
 
     def H(self, x):
@@ -828,8 +842,8 @@ class VolumesCDF(object):
             return np.round(crps, ROUND_DECIMALS)
 
         except Exception as exception:
-            print("[VolumesCDF::Load Exception] %s" % str(exception))
-            print("[VolumesCDF::Load Exception] %s" % str(traceback.format_exc()))
+            log.error("[VolumesCDF::Load Exception] %s" % str(exception))
+            log.error("[VolumesCDF::Load Exception] %s" % str(traceback.format_exc()))
 
             return 0
 
@@ -846,6 +860,18 @@ class VolumesCDF(object):
             cdf[volumeIndex:] = 1
 
         return cdf
+
+
+#-------------------------------------------------------------------------------
+# LOG
+#-------------------------------------------------------------------------------
+log = logging.getLogger('myosaiq')
+log.setLevel(logging.ERROR)
+
+logFormatter = logging.Formatter("[%(asctime)s] %(name)s - %(levelname)s %(message)s")
+logFileHandler = logging.FileHandler('myosaiq_stderr.log')
+logFileHandler.setFormatter(logFormatter)
+log.addHandler(logFileHandler)
 
 
 def verifyFile( filePath ):
