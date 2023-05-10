@@ -161,8 +161,16 @@ class AssessSegmentations( object ):
                 tarHD.append(      seg.targetMetrics.HD[key].value)
                 tarASSD.append(    seg.targetMetrics.ASSD[key].value)
 
-            self.overallReferenceMetrics.VOLUME[key].value = np.nanmean(refVolume)
-            self.overallReferenceMetrics.VOLUME[key].std = np.nanstd(refVolume)
+            print( len(refVolume) )     
+
+            if len(refVolume) > 1:
+                self.overallReferenceMetrics.VOLUME[key].value = np.nanmean(refVolume)
+                self.overallReferenceMetrics.VOLUME[key].std = np.nanstd(refVolume)
+
+            else:
+                self.overallReferenceMetrics.VOLUME[key].value = refVolume[0]
+                self.overallReferenceMetrics.VOLUME[key].std = np.nanstd(refVolume)
+
 
             actual = np.array(refVolume)
             predicted = np.array(tarVolume)
@@ -174,7 +182,10 @@ class AssessSegmentations( object ):
 
             # print( np.corrcoef(actual, predicted) )
             
-            coco = np.corrcoef(actual, predicted)[0,1].tolist()
+            coco = np.NaN
+
+            if(actual.shape[0] > 1):
+                coco = np.corrcoef(actual, predicted)[0,1].tolist()
 
             self.overallReferenceMetrics.VOLUME_MAE[key].value = mae
             self.overallReferenceMetrics.VOLUME_CC[key].value = coco
@@ -182,7 +193,7 @@ class AssessSegmentations( object ):
             self.overallReferenceMetrics.VOLUME_LOA[key].value = 1.96 * self.overallReferenceMetrics.VOLUME[key].std
             
             self.overallReferenceMetrics.DICE[key].value = np.nanmean(refDICE)
-            self.overallReferenceMetrics.DICE[key].std = np.nanstd(refDICE,0)
+            self.overallReferenceMetrics.DICE[key].std = np.nanstd(refDICE)
 
             self.overallReferenceMetrics.HD[key].value = np.nanmean(refHD)
             self.overallReferenceMetrics.HD[key].std = np.nanstd(refHD)
@@ -191,7 +202,7 @@ class AssessSegmentations( object ):
             self.overallReferenceMetrics.ASSD[key].std = np.nanstd(refASSD) 
 
             self.overallTargetMetrics.VOLUME[key].value = np.nanmean(tarVolume)
-            self.overallTargetMetrics.VOLUME[key].std = np.nanstd(tarVolume,0)
+            self.overallTargetMetrics.VOLUME[key].std = np.nanstd(tarVolume)
 
             self.overallTargetMetrics.VOLUME_MAE[key].value = mae
             self.overallTargetMetrics.VOLUME_CC[key].value = coco
@@ -199,7 +210,7 @@ class AssessSegmentations( object ):
             self.overallTargetMetrics.VOLUME_LOA[key].value = 1.96 * self.overallTargetMetrics.VOLUME[key].std
             
             self.overallTargetMetrics.DICE[key].value = np.nanmean(tarDICE)
-            self.overallTargetMetrics.DICE[key].std = np.nanstd(tarDICE,0)
+            self.overallTargetMetrics.DICE[key].std = np.nanstd(tarDICE)
 
             self.overallTargetMetrics.HD[key].value = np.nanmean(tarHD)
             self.overallTargetMetrics.HD[key].std = np.nanstd(tarHD)
@@ -345,7 +356,7 @@ class AssessSegmentation( object ):
         self.__VerifySpacingOrigin()
 
         self.__CalcVolume()
-        self.__CalcDICE()
+        self.__CalcDICE()          # DICE Must be calculated BEFORE HD and/or ASSD.
         self.__CalcHD()
         self.__CalcASSD()
 
@@ -395,6 +406,12 @@ class AssessSegmentation( object ):
                 self.targetMetrics.VOLUME_MAE[label].value = absDifference
         
             except Exception as exception:
+                self.referenceMetrics.VOLUME[label].value = np.NAN
+                self.referenceMetrics.VOLUME_MAE[label].value = np.NAN
+
+                self.targetMetrics.VOLUME[label].value = np.NAN
+                self.targetMetrics.VOLUME_MAE[label].value = np.NAN
+
                 log.error("[AssessSegmentation::CalcVolume Exception] %s" % str(exception))
                 log.error("[AssessSegmentation::CalcVolume Exception] %s" % str(traceback.format_exc()))                
 
@@ -423,7 +440,6 @@ class AssessSegmentation( object ):
         """
         Calculate Hausdorff distance
         """
-
         hausdorffDistanceImage = sitk.HausdorffDistanceImageFilter()
 
         for label in self.referenceLabels:
@@ -445,9 +461,20 @@ class AssessSegmentation( object ):
     def __CalcASSD( self ):
         """
         Calculate Average Symmetric Surface distance
+        DICE Must be calculated BEFORE HD and/or ASSD.
         """
         for label in self.referenceLabels:
             try:
+                if self.referenceMetrics.DICE[label].value == 0.0: 
+
+                    self.referenceMetrics.ASSD[label].value = np.NaN
+                    self.targetMetrics.ASSD[label].value = np.NaN
+                    
+                    self.referenceMetrics.DICE[label].value = np.NAN
+                    self.targetMetrics.DICE[label].value = np.NAN
+
+                    return
+
                 # Symmetric surface distance measures
                 referenceDistanceMap = sitk.Abs( sitk.SignedMaurerDistanceMap(self.referenceImageSegmentation == label, squaredDistance=False) )
                 referenceSurface = sitk.LabelContour(self.referenceImageSegmentation == label)
