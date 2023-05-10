@@ -159,9 +159,7 @@ class AssessSegmentations( object ):
                 tarVolumeAD.append(seg.targetMetrics.VOLUME_MAE[key].value)
                 tarDICE.append(    seg.targetMetrics.DICE[key].value)
                 tarHD.append(      seg.targetMetrics.HD[key].value)
-                tarASSD.append(    seg.targetMetrics.ASSD[key].value)
-
-            print( len(refVolume) )     
+                tarASSD.append(    seg.targetMetrics.ASSD[key].value)  
 
             if len(refVolume) > 1:
                 self.overallReferenceMetrics.VOLUME[key].value = np.nanmean(refVolume)
